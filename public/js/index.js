@@ -17,6 +17,7 @@ Swal.fire({
     if(result.value){
         user = result.value;
         socket.emit("new-user", {user: user,id: socket.id})
+        user.id = socket.id;
     }
     //aqui emite la data que se ve reflejada en la linea 32 de app.js
 })
@@ -54,3 +55,38 @@ socket.on("messageLogs",(data) => {
 
     log.innerHTML = message;
 })
+
+socket.on("new-user-connected",(data) => {
+    if(data.id !== socket.id){
+        Swal.fire({
+            text: `${data.user} se ha conectado al chat`,
+            toast: true,
+            position: "top-end"
+        })
+    }
+})
+
+function firstLoad (){
+    let log = document.getElementById("messageLogs");
+
+    fetch("/messages")
+        .then((response) => {
+            return response.json();
+        })
+        .then((data)=>{
+            let message = "";
+
+            data.forEach((elem)=>{
+                message += `
+                <div class="chat-message">
+                    <div class="message-bubble">
+                        <div class="message-sender">${elem.user}</div>
+                        <p>${elem.message}</p>
+                    </div>
+                </div>`;
+            });
+            log.innerHTML = message;
+        });
+}
+
+firstLoad();

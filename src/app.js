@@ -28,13 +28,21 @@ app.get("/", (req, res) => {
 
 app.use("/views",viewsRoute)
 
+app.get("/messages", (req,res) => {//esto es para que se vean todos los mensajes, creamos una api que contenga todos los mensajes
+    res.json(messages)
+})
+
 io.on("connection", (socket) => {
     console.log('new user connected');
     socket.on("new-user",(data) => { //hace referencia a que cuando se active el emit del socket de index.json recupere la data que se envia
-        console.log(data);
+        socket.user = data.user;
+        socket.id = data.id;
+        io.emit("new-user-connected", { //esta parte es para que se vea que se a conectado un nuevo usuario
+            user: socket.user,
+            id: socket.id
+        })
     });
     //revibe el socket de message con toda su data enviada como segundo parametro en index.js
-
     socket.on("message", (data) => { //este socket hace referencia a que cuando suceda el evento de message se trae ese mensaje y lo aniade al arreglo de mensajes, despues emite todo el arreglo como messagelog. //! lo recibe como mensaje y lo emite como messageLogs
         messages.push(data);
         io.emit("messageLogs", messages);
